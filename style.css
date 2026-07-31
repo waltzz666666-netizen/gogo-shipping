@@ -740,18 +740,7 @@ QR 카메라 영역
 
   border-radius: 12px;
 
-  transform: scale(
-    var(
-      --qr-camera-scale,
-      1.6
-    )
-  );
-
-  transform-origin:
-    center center;
-
-  transition:
-    transform 0.18s ease;
+  transform: none !important;
 }
 
 #qr-reader {
@@ -1083,4 +1072,9 @@ QR 카메라 확대 및 초점
 
     opacity: 1;
   }
+}
+
+
+.qr-zoom-controls {
+  display: none;
 }
