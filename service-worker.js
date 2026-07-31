@@ -1,12 +1,12 @@
 const CACHE_NAME =
-  "gogo-shipping-v2";
+  "gogo-shipping-v3";
 
 
 const APP_SHELL_FILES = [
   "./",
-  "./index.html",
-  "./style.css",
-  "./app.js",
+  "./index.html?v=pwa3",
+  "./style.css?v=pwa3",
+  "./app.js?v=pwa3",
   "./manifest.json",
 
   "./APP/assets/ui/출고자설정화면.png",
