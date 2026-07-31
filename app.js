@@ -1335,60 +1335,70 @@ async function startQrCamera() {
     if (!html5QrCode) {
       html5QrCode =
         new Html5Qrcode(
-          "qr-reader"
+          "qr-reader",
+          {
+            formatsToSupport: [
+              Html5QrcodeSupportedFormats
+                .QR_CODE
+            ],
+
+            /*
+             * 아이폰에서 네이티브
+             * BarcodeDetector 대신
+             * 라이브러리 기본 QR 해독기를 사용합니다.
+             */
+            useBarCodeDetectorIfSupported:
+              false,
+
+            verbose:
+              false
+          }
         );
     }
 
     await html5QrCode.start(
       {
-        facingMode:
-          "environment"
+        facingMode: {
+          ideal:
+            "environment"
+        },
+
+        width: {
+          ideal:
+            1920
+        },
+
+        height: {
+          ideal:
+            1080
+        },
+
+        frameRate: {
+          ideal:
+            30
+        }
       },
       {
-        fps: 10,
+        /*
+         * QR 해독 횟수입니다.
+         * 너무 높이면 아이폰에서
+         * 처리 부담이 커질 수 있습니다.
+         */
+        fps:
+          12,
 
-        qrbox:
-          function (
-            viewfinderWidth,
-            viewfinderHeight
-          ) {
-            const minimumLength =
-              Math.min(
-                viewfinderWidth,
-                viewfinderHeight
-              );
+        /*
+         * 후면 카메라는 일반적으로
+         * 좌우 반전되지 않으므로
+         * 반전 QR 재검사를 생략합니다.
+         */
+        disableFlip:
+          true
 
-            const qrboxLength =
-              Math.floor(
-                minimumLength *
-                0.88
-              );
-
-            return {
-              width:
-                qrboxLength,
-
-              height:
-                qrboxLength
-            };
-          },
-
-        videoConstraints: {
-          facingMode:
-            "environment",
-
-          width: {
-            ideal: 1920
-          },
-
-          height: {
-            ideal: 1080
-          },
-
-          frameRate: {
-            ideal: 30
-          }
-        }
+        /*
+         * qrbox를 지정하지 않습니다.
+         * 카메라 영상 전체를 스캔합니다.
+         */
       },
       function (
         decodedText
@@ -1399,9 +1409,9 @@ async function startQrCamera() {
       },
       function () {
         /*
-         * QR을 아직 찾지 못한 경우는
-         * 정상적인 스캔 대기 상태이므로
-         * 별도 오류를 표시하지 않습니다.
+         * 인식 대기 중 발생하는 오류는
+         * 정상적인 반복 상태이므로
+         * 화면에는 표시하지 않습니다.
          */
       }
     );
