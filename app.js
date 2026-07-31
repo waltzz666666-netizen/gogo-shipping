@@ -3840,3 +3840,43 @@ changeWorkerButton.addEventListener(
 
   }
 );
+
+/*
+ * PWA 서비스 워커를 등록합니다.
+ *
+ * HTTPS 환경이나 localhost에서만
+ * 서비스 워커를 사용할 수 있습니다.
+ */
+if (
+  "serviceWorker" in navigator
+) {
+  window.addEventListener(
+    "load",
+    function () {
+      navigator.serviceWorker
+        .register(
+          "./service-worker.js"
+        )
+        .then(
+          function (
+            registration
+          ) {
+            console.log(
+              "서비스 워커 등록 완료:",
+              registration.scope
+            );
+          }
+        )
+        .catch(
+          function (
+            error
+          ) {
+            console.error(
+              "서비스 워커 등록 실패:",
+              error
+            );
+          }
+        );
+    }
+  );
+}
