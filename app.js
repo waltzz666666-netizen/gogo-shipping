@@ -73,6 +73,31 @@ const shippingCompleteBanner =
     "shipping-complete-banner"
   );
 
+const qrReaderFrame =
+  document.getElementById(
+    "qr-reader-frame"
+  );
+
+const qrZoomOutButton =
+  document.getElementById(
+    "qr-zoom-out-button"
+  );
+
+const qrZoomInButton =
+  document.getElementById(
+    "qr-zoom-in-button"
+  );
+
+const qrZoomDisplay =
+  document.getElementById(
+    "qr-zoom-display"
+  );
+
+const qrFocusIndicator =
+  document.getElementById(
+    "qr-focus-indicator"
+  );
+
 const changeWorkerButton =
   document.getElementById(
     "change-worker-button"
@@ -345,6 +370,9 @@ function findItemById(
 const SHIPPING_WORKER_STORAGE_KEY =
   "gogoShippingWorker";
 
+const QR_CAMERA_SCALE_STORAGE_KEY =
+  "gogoQrCameraScale";
+
 
 /*
  * 고고출GO가 출고 처리를 요청할
@@ -485,6 +513,13 @@ let lastDecodedQrTime =
 
 let shippingCompleteTimer =
   null;
+
+let qrCameraScale =
+  Number(
+    localStorage.getItem(
+      QR_CAMERA_SCALE_STORAGE_KEY
+    )
+  ) || 1.6;
 
 
 
@@ -772,6 +807,215 @@ function updateQrScanStatus(
 }
 
 /*
+ * 카메라 영상 확대 배율을 적용하고
+ * 현재 배율을 저장합니다.
+ */
+function applyQrCameraScale() {
+  document.documentElement
+    .style
+    .setProperty(
+      "--qr-camera-scale",
+      qrCameraScale
+    );
+
+  if (
+    qrZoomDisplay
+  ) {
+    qrZoomDisplay.textContent =
+      qrCameraScale.toFixed(1) +
+      "배";
+  }
+
+  try {
+    localStorage.setItem(
+      QR_CAMERA_SCALE_STORAGE_KEY,
+      String(
+        qrCameraScale
+      )
+    );
+
+  } catch (error) {
+    console.warn(
+      "카메라 배율 저장 실패:",
+      error
+    );
+  }
+}
+
+
+/*
+ * 카메라 영상 확대 배율을
+ * 지정한 값만큼 변경합니다.
+ */
+function changeQrCameraScale(
+  amount
+) {
+  qrCameraScale +=
+    amount;
+
+  qrCameraScale =
+    Math.max(
+      1,
+      Math.min(
+        2.5,
+        qrCameraScale
+      )
+    );
+
+  qrCameraScale =
+    Number(
+      qrCameraScale.toFixed(1)
+    );
+
+  applyQrCameraScale();
+}
+
+
+/*
+ * 카메라 영상 확대 버튼
+ */
+if (
+  qrZoomInButton
+) {
+  qrZoomInButton.addEventListener(
+    "click",
+    function (
+      event
+    ) {
+      event.stopPropagation();
+
+      changeQrCameraScale(
+        0.1
+      );
+    }
+  );
+}
+
+
+/*
+ * 카메라 영상 축소 버튼
+ */
+if (
+  qrZoomOutButton
+) {
+  qrZoomOutButton.addEventListener(
+    "click",
+    function (
+      event
+    ) {
+      event.stopPropagation();
+
+      changeQrCameraScale(
+        -0.1
+      );
+    }
+  );
+}
+
+
+/*
+ * 저장된 카메라 배율을
+ * 앱 시작 시 적용합니다.
+ */
+applyQrCameraScale();
+
+
+/*
+ * 카메라 화면을 탭하면
+ * 해당 위치에 초점 표시를 보여주고
+ * 지원되는 휴대폰에서는
+ * 연속 자동초점을 다시 요청합니다.
+ */
+if (
+  qrReaderFrame
+) {
+  qrReaderFrame.addEventListener(
+    "click",
+    async function (
+      event
+    ) {
+      if (
+        event.target.closest(
+          ".qr-zoom-controls"
+        )
+      ) {
+        return;
+      }
+
+      if (
+        qrFocusIndicator
+      ) {
+        const frameRect =
+          qrReaderFrame
+            .getBoundingClientRect();
+
+        qrFocusIndicator.style.left =
+          (
+            event.clientX -
+            frameRect.left
+          ) +
+          "px";
+
+        qrFocusIndicator.style.top =
+          (
+            event.clientY -
+            frameRect.top
+          ) +
+          "px";
+
+        qrFocusIndicator.hidden =
+          false;
+
+        qrFocusIndicator.classList.remove(
+          "focus-active"
+        );
+
+        void qrFocusIndicator.offsetWidth;
+
+        qrFocusIndicator.classList.add(
+          "focus-active"
+        );
+
+        window.setTimeout(
+          function () {
+            qrFocusIndicator.hidden =
+              true;
+
+            qrFocusIndicator.classList.remove(
+              "focus-active"
+            );
+          },
+          600
+        );
+      }
+
+      try {
+        if (
+          html5QrCode &&
+          isQrCameraRunning
+        ) {
+          await html5QrCode
+            .applyVideoConstraints({
+              advanced: [
+                {
+                  focusMode:
+                    "continuous"
+                }
+              ]
+            });
+        }
+
+      } catch (error) {
+        console.log(
+          "이 기기에서는 웹 자동초점을 지원하지 않습니다.",
+          error
+        );
+      }
+    }
+  );
+}
+
+/*
  * 출고완료 배너를 숨깁니다.
  */
 function hideShippingCompleteBanner() {
@@ -1052,8 +1296,6 @@ async function startQrCamera() {
 
     isQrCameraRunning =
       true;
-
-    await applyQrCameraZoom();
 
     updateQrScanStatus(
       "QR 코드를 비춰주세요"
