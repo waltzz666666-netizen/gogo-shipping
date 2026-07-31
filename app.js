@@ -300,25 +300,93 @@ const effectAccessories = [
  * 브라우저 탭을 완전히 닫으면
  * sessionStorage 값은 자동으로 사라집니다.
  */
+/*
+ * 앱을 완전히 종료한 뒤 다시 열어도
+ * 마지막으로 저장한 캐릭터와 액세서리를 복원합니다.
+ */
+function getSavedPreviewSelection() {
+  try {
+    const savedSettingsText =
+      localStorage.getItem(
+        "gogoShippingWorker"
+      );
+
+    if (!savedSettingsText) {
+      return null;
+    }
+
+    const savedSettings =
+      JSON.parse(
+        savedSettingsText
+      );
+
+    if (
+      !savedSettings ||
+      typeof savedSettings !==
+        "object"
+    ) {
+      return null;
+    }
+
+    return savedSettings;
+
+  } catch (error) {
+    console.warn(
+      "저장된 캐릭터 설정을 불러오지 못했습니다.",
+      error
+    );
+
+    return null;
+  }
+}
+
+
+const savedPreviewSelection =
+  getSavedPreviewSelection();
+
+
 let selectedCharacterId =
   sessionStorage.getItem(
     "gogoPreviewCharacter"
-  ) || "dolphin";
+  ) ||
+  (
+    savedPreviewSelection &&
+    savedPreviewSelection.characterId
+  ) ||
+  "dolphin";
+
 
 let selectedHeadAccessoryId =
   sessionStorage.getItem(
     "gogoPreviewHead"
-  ) || "";
+  ) ||
+  (
+    savedPreviewSelection &&
+    savedPreviewSelection.headAccessoryId
+  ) ||
+  "";
+
 
 let selectedFaceAccessoryId =
   sessionStorage.getItem(
     "gogoPreviewFace"
-  ) || "";
+  ) ||
+  (
+    savedPreviewSelection &&
+    savedPreviewSelection.faceAccessoryId
+  ) ||
+  "";
+
 
 let selectedEffectAccessoryId =
   sessionStorage.getItem(
     "gogoPreviewEffect"
-  ) || "";
+  ) ||
+  (
+    savedPreviewSelection &&
+    savedPreviewSelection.effectAccessoryId
+  ) ||
+  "";
 
   /*
  * 현재 선택된 캐릭터와 액세서리를
