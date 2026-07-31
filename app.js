@@ -1345,7 +1345,7 @@ async function startQrCamera() {
           "environment"
       },
       {
-        fps: 15,
+        fps: 10,
 
         qrbox:
           function (
@@ -1361,7 +1361,7 @@ async function startQrCamera() {
             const qrboxLength =
               Math.floor(
                 minimumLength *
-                0.72
+                0.88
               );
 
             return {
@@ -1374,24 +1374,19 @@ async function startQrCamera() {
           },
 
         videoConstraints: {
-          facingMode: {
-            ideal:
-              "environment"
-          },
+          facingMode:
+            "environment",
 
           width: {
-            ideal: 1920,
-            min: 1280
+            ideal: 1920
           },
 
           height: {
-            ideal: 1080,
-            min: 720
+            ideal: 1080
           },
 
           frameRate: {
-            ideal: 30,
-            min: 15
+            ideal: 30
           }
         }
       },
