@@ -706,6 +706,13 @@ QR 카메라 영역
   border-radius: 12px;
 
   z-index: 30;
+
+  cursor: crosshair;
+
+  touch-action: manipulation;
+
+  -webkit-tap-highlight-color:
+    transparent;
 }
 
 
@@ -732,6 +739,19 @@ QR 카메라 영역
   object-fit: cover;
 
   border-radius: 12px;
+
+  transform: scale(
+    var(
+      --qr-camera-scale,
+      1.6
+    )
+  );
+
+  transform-origin:
+    center center;
+
+  transition:
+    transform 0.18s ease;
 }
 
 #qr-reader {
@@ -883,4 +903,184 @@ QR 카메라 영역
 
   user-select: none;
   -webkit-user-drag: none;
+}
+
+
+/*
+=========================================
+QR 카메라 확대 및 초점
+=========================================
+*/
+
+/*
+ * 카메라 영상 확대·축소 버튼 영역입니다.
+ */
+.qr-zoom-controls {
+  position: absolute;
+
+  right: 12%;
+  top: 42.5%;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 4px 6px;
+
+  border: 2px solid #39713c;
+  border-radius: 8px;
+
+  background:
+    rgba(
+      255,
+      255,
+      255,
+      0.82
+    );
+
+  z-index: 45;
+
+  -webkit-tap-highlight-color:
+    transparent;
+}
+
+
+/*
+ * 카메라 확대·축소 버튼입니다.
+ */
+.qr-zoom-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 30px;
+  height: 30px;
+
+  padding: 0;
+
+  border: 2px solid #39713c;
+  border-radius: 6px;
+
+  background: #f7f1d7;
+
+  color: #39713c;
+
+  font-size: 22px;
+  font-weight: bold;
+  line-height: 1;
+
+  cursor: pointer;
+
+  appearance: none;
+  -webkit-appearance: none;
+
+  -webkit-tap-highlight-color:
+    transparent;
+}
+
+
+/*
+ * 확대·축소 버튼 눌림 효과입니다.
+ */
+.qr-zoom-button:active {
+  transform:
+    translateY(2px);
+}
+
+
+/*
+ * 현재 카메라 확대 배율입니다.
+ */
+.qr-zoom-display {
+  min-width: 44px;
+
+  color: #39713c;
+
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+
+  white-space: nowrap;
+}
+
+
+/*
+ * 카메라를 탭한 위치에 표시되는
+ * 자동초점 표시입니다.
+ */
+.qr-focus-indicator {
+  position: absolute;
+
+  left: 50%;
+  top: 50%;
+
+  width: 54px;
+  height: 54px;
+
+  border: 3px solid #f8ef75;
+  border-radius: 8px;
+
+  transform:
+    translate(
+      -50%,
+      -50%
+    );
+
+  box-shadow:
+    0 0 0 2px
+    rgba(
+      57,
+      113,
+      60,
+      0.7
+    );
+
+  pointer-events: none;
+
+  z-index: 46;
+}
+
+
+/*
+ * hidden 상태에서는 초점 표시를
+ * 완전히 숨깁니다.
+ */
+.qr-focus-indicator[hidden] {
+  display: none;
+}
+
+
+/*
+ * 초점이 맞춰지는 동안
+ * 표시가 살짝 줄어드는 효과입니다.
+ */
+.qr-focus-indicator.focus-active {
+  animation:
+    qr-focus-pulse
+    0.5s ease;
+}
+
+
+@keyframes qr-focus-pulse {
+  0% {
+    transform:
+      translate(
+        -50%,
+        -50%
+      )
+      scale(1.25);
+
+    opacity: 0.5;
+  }
+
+  100% {
+    transform:
+      translate(
+        -50%,
+        -50%
+      )
+      scale(1);
+
+    opacity: 1;
+  }
 }
