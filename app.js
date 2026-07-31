@@ -679,6 +679,16 @@ async function handleQrDecoded(
   lastDecodedQrTime =
     Date.now();
 
+  /*
+   * QR을 정상적으로 읽은 순간
+   * 짧게 한 번 진동합니다.
+   */
+  if (managementNumber) {
+    vibrateDevice(
+      80
+    );
+  }
+
   if (!managementNumber) {
     updateQrScanStatus(
       "관리번호가 없는 QR입니다."
@@ -714,14 +724,9 @@ async function handleQrDecoded(
   );
 
   try {
-    const shippingResponse =
+    const shippingResult =
       await requestShipping(
         managementNumber
-      );
-
-    const shippingResult =
-      parseShippingResponse(
-        shippingResponse.responseText
       );
 
     console.log(
@@ -730,11 +735,16 @@ async function handleQrDecoded(
     );
 
     updateQrScanStatus(
-      shippingResult.message
+      shippingResult.message ||
+      "출고 처리 결과를 확인했습니다."
     );
 
+    /*
+     * 정상 출고 완료
+     */
     if (
-      shippingResult.success
+      shippingResult.status ===
+      "completed"
     ) {
       updateQrScanStatus(
         "출고가 완료되었습니다."
@@ -750,6 +760,42 @@ async function handleQrDecoded(
       );
 
       return;
+    }
+
+    /*
+     * 이미 출고된 주문
+     */
+    if (
+      shippingResult.status ===
+      "already_completed"
+    ) {
+      vibrateDevice([
+        100,
+        80,
+        100
+      ]);
+
+      updateQrScanStatus(
+        "이미 출고된 주문입니다."
+      );
+    }
+
+    /*
+     * 주문을 찾지 못한 경우
+     */
+    if (
+      shippingResult.status ===
+      "not_found"
+    ) {
+      vibrateDevice([
+        180,
+        100,
+        180
+      ]);
+
+      updateQrScanStatus(
+        "주문을 찾을 수 없습니다."
+      );
     }
 
     window.setTimeout(
@@ -769,6 +815,12 @@ async function handleQrDecoded(
       "출고 요청 오류:",
       error
     );
+
+    vibrateDevice([
+      200,
+      100,
+      200
+    ]);
 
     updateQrScanStatus(
       error &&
@@ -804,6 +856,26 @@ function updateQrScanStatus(
 
   qrScanStatus.textContent =
     message;
+}
+
+
+/*
+ * 지원되는 휴대폰에서
+ * 지정한 패턴으로 진동합니다.
+ */
+function vibrateDevice(
+  pattern
+) {
+  if (
+    typeof navigator.vibrate !==
+    "function"
+  ) {
+    return;
+  }
+
+  navigator.vibrate(
+    pattern
+  );
 }
 
 /*
@@ -1055,13 +1127,11 @@ function showShippingCompleteBanner() {
           false;
       }
 
-      if (
-        "vibrate" in navigator
-      ) {
-        navigator.vibrate(
-          120
-        );
-      }
+      vibrateDevice([
+        120,
+        80,
+        120
+      ]);
 
       shippingCompleteTimer =
         window.setTimeout(
@@ -1611,17 +1681,19 @@ function getSavedShippingWorkerSettings() {
 
 /*
  * 관리번호와 출고처리자를
- * Apps Script로 전송합니다.
+ * Apps Script JSONP API로 전송합니다.
  */
-async function requestShipping(
+function requestShipping(
   managementNumber
 ) {
   const savedSettings =
     getSavedShippingWorkerSettings();
 
   if (!savedSettings) {
-    throw new Error(
-      "저장된 출고자 정보가 없습니다."
+    return Promise.reject(
+      new Error(
+        "저장된 출고자 정보가 없습니다."
+      )
     );
   }
 
@@ -1631,47 +1703,186 @@ async function requestShipping(
     );
 
   if (!shippingWorker) {
-    throw new Error(
-      "출고자 이름이 없습니다."
+    return Promise.reject(
+      new Error(
+        "출고자 이름이 없습니다."
+      )
     );
   }
 
-  const requestUrl =
-    DYO_WEB_APP_URL +
-    "?action=ship" +
-    "&managementNumber=" +
-    encodeURIComponent(
-      managementNumber
-    ) +
-    "&shippingWorker=" +
-    encodeURIComponent(
-      shippingWorker
-    );
+  return new Promise(
+    function (
+      resolve,
+      reject
+    ) {
+      const callbackName =
+        "gogoShippingCallback_" +
+        Date.now() +
+        "_" +
+        Math.floor(
+          Math.random() *
+          100000
+        );
 
-  const response =
-    await fetch(
-      requestUrl,
-      {
-        method: "GET",
-        redirect: "follow",
-        cache: "no-store"
+      const script =
+        document.createElement(
+          "script"
+        );
+
+      let timeoutId =
+        null;
+
+      let requestFinished =
+        false;
+
+      /*
+       * JSONP 요청이 끝난 뒤
+       * 생성한 callback과 script를 정리합니다.
+       */
+      function cleanupJsonpRequest() {
+        if (timeoutId) {
+          window.clearTimeout(
+            timeoutId
+          );
+
+          timeoutId =
+            null;
+        }
+
+        if (
+          script.parentNode
+        ) {
+          script.parentNode.removeChild(
+            script
+          );
+        }
+
+        try {
+          delete window[
+            callbackName
+          ];
+
+        } catch (error) {
+          window[
+            callbackName
+          ] =
+            undefined;
+        }
       }
-    );
 
-  if (!response.ok) {
-    throw new Error(
-      "출고 서버 응답을 확인할 수 없습니다."
-    );
-  }
+      /*
+       * Apps Script가 반환한 결과를
+       * JSONP callback으로 받습니다.
+       */
+      window[
+        callbackName
+      ] =
+        function (
+          result
+        ) {
+          if (requestFinished) {
+            return;
+          }
 
-  const responseText =
-    await response.text();
+          requestFinished =
+            true;
 
-  return {
-    responseText: responseText,
-    shippingWorker:
-      shippingWorker
-  };
+          cleanupJsonpRequest();
+
+          if (
+            !result ||
+            typeof result !==
+              "object"
+          ) {
+            reject(
+              new Error(
+                "출고 서버 응답이 올바르지 않습니다."
+              )
+            );
+
+            return;
+          }
+
+          resolve(
+            result
+          );
+        };
+
+      /*
+       * 스크립트 자체를 불러오지 못한 경우입니다.
+       */
+      script.onerror =
+        function () {
+          if (requestFinished) {
+            return;
+          }
+
+          requestFinished =
+            true;
+
+          cleanupJsonpRequest();
+
+          reject(
+            new Error(
+              "출고 서버에 연결할 수 없습니다."
+            )
+          );
+        };
+
+      const requestUrl =
+        DYO_WEB_APP_URL +
+        "?action=ship_api" +
+        "&managementNumber=" +
+        encodeURIComponent(
+          managementNumber
+        ) +
+        "&shippingWorker=" +
+        encodeURIComponent(
+          shippingWorker
+        ) +
+        "&callback=" +
+        encodeURIComponent(
+          callbackName
+        ) +
+        "&timestamp=" +
+        Date.now();
+
+      script.src =
+        requestUrl;
+
+      script.async =
+        true;
+
+      /*
+       * 15초 안에 응답이 없으면
+       * 요청 실패로 처리합니다.
+       */
+      timeoutId =
+        window.setTimeout(
+          function () {
+            if (requestFinished) {
+              return;
+            }
+
+            requestFinished =
+              true;
+
+            cleanupJsonpRequest();
+
+            reject(
+              new Error(
+                "출고 서버 응답 시간이 초과되었습니다."
+              )
+            );
+          },
+          15000
+        );
+
+      document.head.appendChild(
+        script
+      );
+    }
+  );
 }
 
 /*
