@@ -457,6 +457,20 @@ let isQrCameraRunning =
 
 
 /*
+ * QR 카메라 기본 확대 배율입니다.
+ *
+ * 1 = 확대 없음
+ * 1.5 = 1.5배
+ * 2 = 2배
+ *
+ * 휴대폰 카메라가 지원하는 범위를
+ * 벗어나면 자동으로 최대 또는 최소값에 맞춥니다.
+ */
+const QR_CAMERA_ZOOM =
+  2;
+
+
+/*
  * 같은 QR이 카메라에 계속 보일 때
  * 중복으로 처리되지 않도록 막습니다.
  */
@@ -883,6 +897,88 @@ function getQrCameraErrorMessage(
 
 
 /*
+ * 휴대폰 카메라가 줌을 지원하면
+ * QR 카메라에 지정한 확대 배율을 적용합니다.
+ *
+ * 줌을 지원하지 않는 기기에서는
+ * 기존 카메라 화면을 그대로 유지합니다.
+ */
+async function applyQrCameraZoom() {
+  if (
+    !html5QrCode ||
+    !isQrCameraRunning
+  ) {
+    return;
+  }
+
+  try {
+    const capabilities =
+      html5QrCode
+        .getRunningTrackCapabilities();
+
+    const zoomCapabilities =
+      capabilities
+        ? capabilities.zoom
+        : null;
+
+    if (
+      !zoomCapabilities ||
+      typeof zoomCapabilities.min !==
+        "number" ||
+      typeof zoomCapabilities.max !==
+        "number"
+    ) {
+      console.log(
+        "이 카메라는 줌 기능을 지원하지 않습니다."
+      );
+
+      return;
+    }
+
+    const minimumZoom =
+      zoomCapabilities.min;
+
+    const maximumZoom =
+      zoomCapabilities.max;
+
+    const targetZoom =
+      Math.min(
+        maximumZoom,
+        Math.max(
+          minimumZoom,
+          QR_CAMERA_ZOOM
+        )
+      );
+
+    await html5QrCode
+      .applyVideoConstraints({
+        advanced: [
+          {
+            zoom: targetZoom
+          }
+        ]
+      });
+
+    console.log(
+      "QR 카메라 확대 적용:",
+      targetZoom
+    );
+
+  } catch (error) {
+    /*
+     * 확대를 지원하지 않거나
+     * 브라우저가 줌 설정을 거부해도
+     * QR 카메라 자체는 계속 사용합니다.
+     */
+    console.warn(
+      "QR 카메라 확대 적용 실패:",
+      error
+    );
+  }
+}
+
+
+/*
  * QR 카메라를 실행합니다.
  *
  * 출고 처리 화면의 흰색 영역 안에
@@ -956,6 +1052,8 @@ async function startQrCamera() {
 
     isQrCameraRunning =
       true;
+
+    await applyQrCameraZoom();
 
     updateQrScanStatus(
       "QR 코드를 비춰주세요"
