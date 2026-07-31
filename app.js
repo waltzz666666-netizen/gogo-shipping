@@ -1525,68 +1525,6 @@ async function startQrCamera() {
   }
 }
 
-    await html5QrCode.start(
-      {
-        facingMode:
-          "environment"
-      },
-      {
-        /*
-         * 여러 아이폰과 갤럭시에서
-         * 안정적으로 실행되도록
-         * 최소 설정만 사용합니다.
-         */
-        fps:
-          10,
-
-        /*
-         * 전면·후면 카메라와
-         * QR 방향 차이를 모두 처리합니다.
-         */
-        disableFlip:
-          false
-      },
-      function (
-        decodedText
-      ) {
-        handleQrDecoded(
-          decodedText
-        );
-      },
-      function () {
-        /*
-         * 아직 QR을 인식하지 못한 상태는
-         * 정상적인 스캔 대기 상태이므로
-         * 별도 오류를 표시하지 않습니다.
-         */
-      }
-    );
-
-    isQrCameraRunning =
-      true;
-
-    updateQrScanStatus(
-      "QR 코드를 비춰주세요"
-    );
-
-  } catch (error) {
-    console.error(
-      "QR 카메라 실행 오류:",
-      error
-    );
-
-    updateQrScanStatus(
-      getQrCameraErrorMessage(
-        error
-      )
-    );
-
-  } finally {
-    isQrCameraStarting =
-      false;
-  }
-}
-
 
 /*
  * 실행 중인 QR 카메라를 종료합니다.
