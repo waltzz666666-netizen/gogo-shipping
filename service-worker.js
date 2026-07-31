@@ -1,5 +1,5 @@
 const CACHE_NAME =
-  "gogo-shipping-v1";
+  "gogo-shipping-v2";
 
 
 const APP_SHELL_FILES = [
