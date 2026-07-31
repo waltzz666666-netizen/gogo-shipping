@@ -5,7 +5,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
   >
 
   <title>고고출GO</title>
@@ -263,6 +263,9 @@
       <div
         id="qr-reader-frame"
         class="qr-reader-frame"
+        role="button"
+        tabindex="0"
+        aria-label="QR 카메라 화면, 탭하여 자동초점"
       >
         <!-- 실제 QR 카메라가 생성되는 영역 -->
         <div
@@ -270,6 +273,46 @@
           class="qr-reader"
           aria-label="QR 코드 카메라 화면"
         ></div>
+
+        <!-- 카메라 초점 표시 -->
+        <span
+          id="qr-focus-indicator"
+          class="qr-focus-indicator"
+          aria-hidden="true"
+          hidden
+        ></span>
+      </div>
+
+      <!-- 카메라 영상 확대 조절 -->
+      <div
+        class="qr-zoom-controls"
+        aria-label="카메라 영상 확대 조절"
+      >
+        <button
+          id="qr-zoom-out-button"
+          class="qr-zoom-button"
+          type="button"
+          aria-label="카메라 영상 축소"
+        >
+          −
+        </button>
+
+        <span
+          id="qr-zoom-display"
+          class="qr-zoom-display"
+          aria-live="polite"
+        >
+          1.6배
+        </span>
+
+        <button
+          id="qr-zoom-in-button"
+          class="qr-zoom-button"
+          type="button"
+          aria-label="카메라 영상 확대"
+        >
+          ＋
+        </button>
       </div>
 
       <!-- QR 스캔 상태 안내 -->
