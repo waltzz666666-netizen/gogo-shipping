@@ -1061,28 +1061,11 @@ if (
         );
       }
 
-      try {
-        if (
-          html5QrCode &&
-          isQrCameraRunning
-        ) {
-          await html5QrCode
-            .applyVideoConstraints({
-              advanced: [
-                {
-                  focusMode:
-                    "continuous"
-                }
-              ]
-            });
-        }
-
-      } catch (error) {
-        console.log(
-          "이 기기에서는 웹 자동초점을 지원하지 않습니다.",
-          error
-        );
-      }
+      /*
+       * 초점 표시 애니메이션만 보여주고,
+       * 실제 초점은 휴대폰 카메라의
+       * 기본 연속 자동초점에 맡깁니다.
+       */
     }
   );
 }
@@ -1342,14 +1325,6 @@ async function startQrCamera() {
                 .QR_CODE
             ],
 
-            /*
-             * 아이폰에서 네이티브
-             * BarcodeDetector 대신
-             * 라이브러리 기본 QR 해독기를 사용합니다.
-             */
-            useBarCodeDetectorIfSupported:
-              false,
-
             verbose:
               false
           }
@@ -1358,47 +1333,24 @@ async function startQrCamera() {
 
     await html5QrCode.start(
       {
-        facingMode: {
-          ideal:
-            "environment"
-        },
-
-        width: {
-          ideal:
-            1920
-        },
-
-        height: {
-          ideal:
-            1080
-        },
-
-        frameRate: {
-          ideal:
-            30
-        }
+        facingMode:
+          "environment"
       },
       {
         /*
-         * QR 해독 횟수입니다.
-         * 너무 높이면 아이폰에서
-         * 처리 부담이 커질 수 있습니다.
+         * 여러 아이폰과 갤럭시에서
+         * 안정적으로 실행되도록
+         * 최소 설정만 사용합니다.
          */
         fps:
-          12,
+          10,
 
         /*
-         * 후면 카메라는 일반적으로
-         * 좌우 반전되지 않으므로
-         * 반전 QR 재검사를 생략합니다.
+         * 전면·후면 카메라와
+         * QR 방향 차이를 모두 처리합니다.
          */
         disableFlip:
-          true
-
-        /*
-         * qrbox를 지정하지 않습니다.
-         * 카메라 영상 전체를 스캔합니다.
-         */
+          false
       },
       function (
         decodedText
@@ -1409,9 +1361,9 @@ async function startQrCamera() {
       },
       function () {
         /*
-         * 인식 대기 중 발생하는 오류는
-         * 정상적인 반복 상태이므로
-         * 화면에는 표시하지 않습니다.
+         * 아직 QR을 인식하지 못한 상태는
+         * 정상적인 스캔 대기 상태이므로
+         * 별도 오류를 표시하지 않습니다.
          */
       }
     );
