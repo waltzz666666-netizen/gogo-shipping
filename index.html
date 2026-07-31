@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+  >
+
+  <title>고고출GO</title>
+
+  <link
+    rel="icon"
+    type="image/png"
+    href="APP/assets/ui/고고출고어플아이콘.png"
+  >
+
+  <link
+    rel="stylesheet"
+    href="style.css"
+  >
+</head>
+
+<body>
+  <main class="app">
+
+    <!-- 출고자 설정 화면 -->
+    <section
+      id="setup-screen"
+      class="screen"
+    >
+      <img
+        class="screen-background"
+        src="APP/assets/ui/출고자설정화면.png"
+        alt="고고출GO 출고자 설정 화면"
+      >
+
+      <!-- 주변효과 미리보기 -->
+      <img
+        id="preview-effect"
+        class="preview-accessory preview-effect"
+        src=""
+        alt=""
+        hidden
+      >
+
+      <!-- 메인 캐릭터 미리보기 -->
+      <img
+        id="preview-character"
+        class="preview-character"
+        src="APP/assets/characters/dolphin.png"
+        alt="선택한 캐릭터 미리보기"
+      >
+
+      <!-- 머리 액세서리 미리보기 -->
+      <img
+        id="preview-head"
+        class="preview-accessory preview-head"
+        src=""
+        alt=""
+        hidden
+      >
+
+      <!-- 얼굴 액세서리 미리보기 -->
+      <img
+        id="preview-face"
+        class="preview-accessory preview-face"
+        src=""
+        alt=""
+        hidden
+      >
+
+      <!-- 메인 캐릭터 선택 영역 -->
+      <div
+        id="character-grid"
+        class="character-grid"
+        aria-label="메인 캐릭터 선택"
+      ></div>
+
+      <!-- 머리 액세서리 선택 영역 -->
+      <div
+        id="head-accessory-grid"
+        class="accessory-grid head-accessory-grid"
+        aria-label="머리 액세서리 선택"
+      ></div>
+
+      <!-- 얼굴 액세서리 선택 영역 -->
+      <div
+        id="face-accessory-grid"
+        class="accessory-grid face-accessory-grid"
+        aria-label="얼굴 액세서리 선택"
+      ></div>
+
+      <!-- 주변효과 선택 영역 -->
+      <div
+        id="effect-accessory-grid"
+        class="accessory-grid effect-accessory-grid"
+        aria-label="주변효과 선택"
+      ></div>
+
+      <!-- 출고자 입력 영역 -->
+      <div
+        id="shipping-worker-form"
+        class="shipping-worker-form"
+      >
+        <label
+          for="shipping-worker-position"
+          class="visually-hidden"
+        >
+          출고자 직급
+        </label>
+
+        <select
+          id="shipping-worker-position"
+          class="shipping-worker-position"
+          aria-label="출고자 직급"
+        >
+          <option value="">
+            직급 선택
+          </option>
+
+          <option value="사원">
+            사원
+          </option>
+
+          <option value="대리">
+            대리
+          </option>
+
+          <option value="과장">
+            과장
+          </option>
+
+          <option value="팀장">
+            팀장
+          </option>
+
+          <option value="사장">
+            사장
+          </option>
+          
+          <option value="알바">
+            알바
+          </option>
+        </select>
+
+        <label
+          for="shipping-worker-name"
+          class="visually-hidden"
+        >
+          출고자 이름
+        </label>
+
+        <input
+          id="shipping-worker-name"
+          class="shipping-worker-name"
+          type="text"
+          maxlength="10"
+          autocomplete="name"
+          placeholder="이름 입력"
+          aria-label="출고자 이름"
+        >
+      </div>
+
+      <!-- 입력 오류 안내 -->
+      <p
+        id="shipping-worker-error"
+        class="shipping-worker-error"
+        role="alert"
+        hidden
+      ></p>
+
+      <!-- 저장하기 투명 클릭 영역 -->
+      <button
+        id="save-button"
+        class="save-click-area"
+        type="button"
+        aria-label="출고자 설정 저장하기"
+      ></button>
+    </section>
+
+    <!-- 출고 처리 화면 -->
+    <section
+      id="shipping-screen"
+      class="screen"
+      hidden
+    >
+      <img
+        class="screen-background"
+        src="APP/assets/ui/출고처리화면.png"
+        alt="고고출GO 출고 처리 화면"
+      >
+
+      <!-- 출고 처리 화면 캐릭터 그룹 -->
+      <div
+        id="shipping-preview-group"
+        class="shipping-preview-group"
+      >
+
+        <!-- 왼쪽 주변효과 -->
+        <img
+          id="shipping-effect-left"
+          class="shipping-accessory shipping-effect"
+          src=""
+          alt=""
+          hidden
+        >
+
+        <!-- 오른쪽 주변효과 -->
+        <img
+          id="shipping-effect-right"
+          class="shipping-accessory shipping-effect"
+          src=""
+          alt=""
+          hidden
+        >
+
+        <!-- 캐릭터 -->
+        <img
+          id="shipping-character"
+          class="shipping-character"
+          src="APP/assets/characters/dolphin.png"
+          alt="출고자 캐릭터"
+        >
+
+        <!-- 머리 액세서리 -->
+        <img
+          id="shipping-head"
+          class="shipping-accessory shipping-head"
+          src=""
+          alt=""
+          hidden
+        >
+
+        <!-- 얼굴 액세서리 -->
+        <img
+          id="shipping-face"
+          class="shipping-accessory shipping-face"
+          src=""
+          alt=""
+          hidden
+        >
+
+      </div>
+
+      <!-- 현재 출고자 표시 -->
+      <p
+        id="shipping-worker-display"
+        class="shipping-worker-display"
+        aria-live="polite"
+      ></p>
+
+      <!-- 출고자 변경 투명 클릭 영역 -->
+      <button
+        id="change-worker-button"
+        class="change-worker-click-area"
+        type="button"
+        aria-label="출고자 변경"
+      ></button>
+
+      <!-- QR 카메라 영역 -->
+      <div
+        id="qr-reader"
+        class="qr-reader"
+        aria-label="QR 코드 카메라 화면"
+      ></div>
+
+      <!-- QR 스캔 상태 안내 -->
+      <p
+        id="qr-scan-status"
+        class="qr-scan-status"
+        aria-live="polite"
+      >
+        카메라 준비 중
+      </p>
+
+      <!-- 출고 완료 하단 배너 -->
+      <div
+        id="shipping-complete-banner"
+        class="shipping-complete-banner"
+        hidden
+        aria-live="assertive"
+      >
+        <img
+          class="shipping-complete-banner-image"
+          src="APP/assets/ui/출고완료버튼.png"
+          alt="출고 완료"
+        >
+      </div>
+    </section>
+
+  </main>
+
+  <script
+    src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"
+  ></script>
+
+  <script src="app.js"></script>
+</body>
+</html>
