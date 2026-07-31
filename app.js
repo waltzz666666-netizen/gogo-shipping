@@ -1275,8 +1275,55 @@ async function startQrCamera() {
           "environment"
       },
       {
-        fps: 10,
-        aspectRatio: 1
+        fps: 15,
+
+        qrbox:
+          function (
+            viewfinderWidth,
+            viewfinderHeight
+          ) {
+            const minimumLength =
+              Math.min(
+                viewfinderWidth,
+                viewfinderHeight
+              );
+
+            const qrboxLength =
+              Math.floor(
+                minimumLength *
+                0.72
+              );
+
+            return {
+              width:
+                qrboxLength,
+
+              height:
+                qrboxLength
+            };
+          },
+
+        videoConstraints: {
+          facingMode: {
+            ideal:
+              "environment"
+          },
+
+          width: {
+            ideal: 1920,
+            min: 1280
+          },
+
+          height: {
+            ideal: 1080,
+            min: 720
+          },
+
+          frameRate: {
+            ideal: 30,
+            min: 15
+          }
+        }
       },
       function (
         decodedText
