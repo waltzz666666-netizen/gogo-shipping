@@ -259,12 +259,18 @@
         aria-label="출고자 변경"
       ></button>
 
-      <!-- QR 카메라 영역 -->
+      <!-- QR 카메라 고정 영역 -->
       <div
-        id="qr-reader"
-        class="qr-reader"
-        aria-label="QR 코드 카메라 화면"
-      ></div>
+        id="qr-reader-frame"
+        class="qr-reader-frame"
+      >
+        <!-- 실제 QR 카메라가 생성되는 영역 -->
+        <div
+          id="qr-reader"
+          class="qr-reader"
+          aria-label="QR 코드 카메라 화면"
+        ></div>
+      </div>
 
       <!-- QR 스캔 상태 안내 -->
       <p
