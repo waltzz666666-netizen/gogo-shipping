@@ -1331,10 +1331,6 @@ async function startQrCamera() {
 
   try {
     if (!html5QrCode) {
-      /*
-       * 기기별 호환성을 위해
-       * 별도 생성 옵션 없이 초기화합니다.
-       */
       html5QrCode =
         new Html5Qrcode(
           "qr-reader"
@@ -1342,7 +1338,8 @@ async function startQrCamera() {
     }
 
     const scannerConfig = {
-      fps: 10,
+      fps:
+        10,
 
       disableFlip:
         false
@@ -1360,78 +1357,32 @@ async function startQrCamera() {
     const onQrDecodeError =
       function () {
         /*
-         * QR을 아직 찾지 못한 상태는
+         * 아직 QR을 찾지 못한 상태는
          * 정상적인 스캔 대기 상태입니다.
          */
       };
 
-    try {
-      /*
-       * 먼저 일반적인 후면 카메라
-       * 지정 방식으로 실행합니다.
-       */
-      await html5QrCode.start(
-        {
-          facingMode: {
-            ideal:
-              "environment"
-          }
-        },
-        scannerConfig,
-        onQrDecoded,
-        onQrDecodeError
-      );
-
-    } catch (
-      firstCameraError
-    ) {
-      console.warn(
-        "후면 카메라 자동 실행 실패:",
-        firstCameraError
-      );
-
-      /*
-       * 자동 후면 카메라 지정이 실패하면
-       * 사용 가능한 카메라 목록을 직접 확인합니다.
-       */
-      const cameras =
-        await Html5Qrcode
-          .getCameras();
-
-      if (
-        !Array.isArray(
-          cameras
-        ) ||
-        cameras.length === 0
-      ) {
-        throw new Error(
-          "사용 가능한 카메라를 찾지 못했습니다."
-        );
-      }
-
-      /*
-       * 일반적으로 마지막 카메라가
-       * 후면 카메라인 경우가 많습니다.
-       */
-      const preferredCamera =
-        cameras[
-          cameras.length - 1
-        ];
-
-      await html5QrCode.start(
-        preferredCamera.id,
-        scannerConfig,
-        onQrDecoded,
-        onQrDecodeError
-      );
-    }
+    /*
+     * 아이폰과 갤럭시에서
+     * 상태 전환 충돌이 발생하지 않도록
+     * 카메라 실행은 한 번만 요청합니다.
+     */
+    await html5QrCode.start(
+      {
+        facingMode:
+          "environment"
+      },
+      scannerConfig,
+      onQrDecoded,
+      onQrDecodeError
+    );
 
     isQrCameraRunning =
       true;
 
     /*
-     * 아이폰에서 영상이 화면 안에서
-     * 바로 재생되도록 속성을 보강합니다.
+     * 아이폰에서 카메라 영상이
+     * 브라우저 안에서 바로 재생되도록 합니다.
      */
     window.requestAnimationFrame(
       function () {
@@ -1459,25 +1410,6 @@ async function startQrCamera() {
 
         video.autoplay =
           true;
-
-        const playPromise =
-          video.play();
-
-        if (
-          playPromise &&
-          typeof playPromise.catch ===
-            "function"
-        ) {
-          playPromise.catch(
-            function () {
-              /*
-               * 이미 재생 중이거나
-               * 브라우저가 자동 재생을 관리하는 경우
-               * 별도 오류로 처리하지 않습니다.
-               */
-            }
-          );
-        }
       }
     );
 
@@ -1494,6 +1426,10 @@ async function startQrCamera() {
     isQrCameraRunning =
       false;
 
+    /*
+     * 실패한 인스턴스를 정리해서
+     * 다음 실행 때 새로 만들 수 있게 합니다.
+     */
     if (
       html5QrCode
     ) {
@@ -1504,7 +1440,7 @@ async function startQrCamera() {
         clearError
       ) {
         console.warn(
-          "QR 카메라 초기화 정리 실패:",
+          "QR 카메라 정리 실패:",
           clearError
         );
       }
